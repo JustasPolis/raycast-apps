@@ -28,7 +28,9 @@ export default function Command() {
         {data !== undefined &&
           data["active"] !== undefined &&
           data["active"]
+            // @ts-ignore
             .filter((app) => app.app !== "Raycast")
+            // @ts-ignore
             .map((app, index) => (
               <List.Item
                 key={index}
@@ -57,6 +59,7 @@ export default function Command() {
       <List.Section title="Idle">
         {data !== undefined &&
           data["idle"] !== undefined &&
+          // @ts-ignore
           data["idle"].map((app, index) => (
             <List.Item
               key={index}
@@ -83,6 +86,7 @@ export default function Command() {
       <List.Section title="Inactive">
         {data !== undefined &&
           data["inactive"] !== undefined &&
+          // @ts-ignore
           data["inactive"].map((app, index) => (
             <List.Item
               key={index}
