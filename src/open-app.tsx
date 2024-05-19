@@ -10,8 +10,10 @@ export default function Command() {
     parseOutput: ({ stdout }) => {
       return JSON.parse(stdout);
     },
-    keepPreviousData: true,
+    keepPreviousData: false,
   });
+
+  const closeWindow = async () => await closeMainWindow({ clearRootSearch: true });
 
   if (isLoading)
     return (
@@ -43,6 +45,7 @@ export default function Command() {
                         execSync(`/opt/homebrew/bin/yabai -m window --focus ${app.id}`, {
                           env: { USER: userInfo().username },
                         });
+                        closeWindow();
                         popToRoot({ clearSearchBar: true });
                       }}
                     />
@@ -68,6 +71,8 @@ export default function Command() {
                     title="Open"
                     onAction={() => {
                       execSync(`open '${app.path}'`);
+                      closeWindow();
+                      popToRoot({ clearSearchBar: true });
                     }}
                   />
                 </ActionPanel>
@@ -92,6 +97,8 @@ export default function Command() {
                     title="Open"
                     onAction={() => {
                       execSync(`open '${app.path}'`);
+                      closeWindow();
+                      popToRoot({ clearSearchBar: true });
                     }}
                   />
                 </ActionPanel>
