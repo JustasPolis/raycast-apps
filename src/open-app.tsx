@@ -1,6 +1,5 @@
-import { Action, ActionPanel, List } from "@raycast/api";
+import { Action, ActionPanel, List, closeMainWindow, popToRoot } from "@raycast/api";
 import { useExec } from "@raycast/utils";
-import { useMemo, useEffect } from "react";
 import { userInfo } from "os";
 import { execSync } from "child_process";
 
@@ -8,39 +7,54 @@ export default function Command() {
   const { isLoading, data } = useExec("mac-apps", ["list", "all"], {
     env: { USER: userInfo().username, PATH: "/opt/homebrew/bin" },
     shell: true,
+    parseOutput: ({ stdout }) => {
+      return JSON.parse(stdout);
+    },
+    keepPreviousData: true,
   });
-  const results = useMemo<{ id: string; name: string }[]>(() => JSON.parse(data || "{}") || [], [data]);
+
+  if (isLoading)
+    return (
+      <List isLoading={isLoading}>
+        <List.EmptyView />
+      </List>
+    );
 
   return (
-    <List>
+    <List isLoading={isLoading}>
       <List.Section title="Active">
-        {results["active"] !== undefined &&
-          results["active"].map((app, index) => (
-            <List.Item
-              key={index}
-              title={app.title}
-              id={app.id.toString()}
-              icon={{ fileIcon: app.path }}
-              subtitle={app.app}
-              keywords={[app.app]}
-              actions={
-                <ActionPanel>
-                  <Action
-                    title="Focus"
-                    onAction={() => {
-                      execSync(`/opt/homebrew/bin/yabai -m window --focus ${app.id}`, {
-                        env: { USER: userInfo().username },
-                      });
-                    }}
-                  />
-                </ActionPanel>
-              }
-            />
-          ))}
+        {data !== undefined &&
+          data["active"] !== undefined &&
+          data["active"]
+            .filter((app) => app.app !== "Raycast")
+            .map((app, index) => (
+              <List.Item
+                key={index}
+                title={app.title}
+                id={app.id.toString()}
+                icon={{ fileIcon: app.path }}
+                subtitle={app.app}
+                keywords={[app.app]}
+                actions={
+                  <ActionPanel>
+                    <Action
+                      title="Focus"
+                      onAction={() => {
+                        execSync(`/opt/homebrew/bin/yabai -m window --focus ${app.id}`, {
+                          env: { USER: userInfo().username },
+                        });
+                        popToRoot({ clearSearchBar: true });
+                      }}
+                    />
+                  </ActionPanel>
+                }
+              />
+            ))}
       </List.Section>
       <List.Section title="Idle">
-        {results["idle"] !== undefined &&
-          results["idle"].map((app, index) => (
+        {data !== undefined &&
+          data["idle"] !== undefined &&
+          data["idle"].map((app, index) => (
             <List.Item
               key={index}
               title={app.title}
@@ -62,8 +76,9 @@ export default function Command() {
           ))}
       </List.Section>
       <List.Section title="Inactive">
-        {results["inactive"] !== undefined &&
-          results["inactive"].map((app, index) => (
+        {data !== undefined &&
+          data["inactive"] !== undefined &&
+          data["inactive"].map((app, index) => (
             <List.Item
               key={index}
               title={app.title}
